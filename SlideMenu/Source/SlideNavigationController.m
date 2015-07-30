@@ -140,7 +140,7 @@ static SlideNavigationController *singletonInstance;
     
     // When menu open we disable user interaction
     // When rotates we want to make sure that userInteraction is enabled again
-    [self enableTapGestureToCloseMenu:NO];
+    //[self enableTapGestureToCloseMenu:NO];
     
     if (self.menuNeedsLayout)
     {
