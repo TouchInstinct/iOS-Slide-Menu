@@ -219,23 +219,30 @@ static SlideNavigationController *singletonInstance;
 	}
 	
 	void (^switchAndCallCompletion)(BOOL) = ^(BOOL closeMenuBeforeCallingCompletion) {
-		if (poptype == PopTypeAll) {
-			[self setViewControllers:@[viewController]];
-		}
-		else {
-			[super popToRootViewControllerAnimated:NO];
-			[super pushViewController:viewController animated:NO];
-		}
+        
+        void (^setNewControllerBlock)() = ^{
+            if (poptype == PopTypeAll) {
+                [self setViewControllers:@[viewController]];
+            }
+            else {
+                [super popToRootViewControllerAnimated:NO];
+                [super pushViewController:viewController animated:NO];
+            }
+        };
 		
 		if (closeMenuBeforeCallingCompletion)
 		{
 			[self closeMenuWithCompletion:^{
+                setNewControllerBlock();
+                
 				if (completion)
 					completion();
 			}];
 		}
 		else
 		{
+            setNewControllerBlock();
+            
 			if (completion)
 				completion();
 		}
