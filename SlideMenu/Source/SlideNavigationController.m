@@ -119,7 +119,8 @@ static SlideNavigationController *singletonInstance;
 	
 	singletonInstance = self;
 	
-	self.menuRevealAnimationDuration = MENU_SLIDE_ANIMATION_DURATION;
+	self.menuOpenAnimationDuration = MENU_SLIDE_ANIMATION_DURATION;
+    self.menuCloseAnimationDuration = MENU_SLIDE_ANIMATION_DURATION;
 	self.menuRevealAnimationOption = MENU_SLIDE_ANIMATION_OPTION;
 	self.landscapeSlideOffset = MENU_DEFAULT_SLIDE_OFFSET;
 	self.portraitSlideOffset = MENU_DEFAULT_SLIDE_OFFSET;
@@ -151,7 +152,7 @@ static SlideNavigationController *singletonInstance;
         if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0") && [self isMenuOpen])
         {
             Menu menu = (self.horizontalLocation > 0) ? MenuLeft : MenuRight;
-            [self openMenu:menu withDuration:0 andCompletion:nil];
+            [self openMenu:menu withCompletion:nil];
         }
         
         self.menuNeedsLayout = NO;
@@ -208,8 +209,7 @@ static SlideNavigationController *singletonInstance;
 }
 
 - (void)switchToViewController:(UIViewController *)viewController
-		 withSlideOutAnimation:(BOOL)slideOutAnimation
-					   popType:(PopType)poptype
+                popType:(PopType)poptype
 				 andCompletion:(void (^)())completion
 {
 	if (self.avoidSwitchingToSameClassViewController && [self.topViewController isKindOfClass:viewController.class])
@@ -217,102 +217,64 @@ static SlideNavigationController *singletonInstance;
 		[self closeMenuWithCompletion:completion];
 		return;
 	}
-	
-	void (^switchAndCallCompletion)(BOOL) = ^(BOOL closeMenuBeforeCallingCompletion) {
-        
-        void (^setNewControllerBlock)() = ^{
-            if (poptype == PopTypeAll) {
-                [self setViewControllers:@[viewController]];
-            }
-            else {
-                [super popToRootViewControllerAnimated:NO];
-                [super pushViewController:viewController animated:NO];
-            }
-        };
-		
-		if (closeMenuBeforeCallingCompletion)
-		{
-			[self closeMenuWithCompletion:^{
-                setNewControllerBlock();
-                
-				if (completion)
-					completion();
-			}];
-		}
-		else
-		{
+    
+    void (^setNewControllerBlock)() = ^{
+        if (poptype == PopTypeAll) {
+            [self setViewControllers:@[viewController]];
+        }
+        else {
+            [super popToRootViewControllerAnimated:NO];
+            [super pushViewController:viewController animated:NO];
+        }
+    };
+    
+    if ([self isMenuOpen])
+    {
+        [self closeMenuWithCompletion:^{
             setNewControllerBlock();
             
-			if (completion)
-				completion();
-		}
-	};
-	
-	if ([self isMenuOpen])
-	{
-		if (slideOutAnimation)
-		{
-			[UIView animateWithDuration:(slideOutAnimation) ? self.menuRevealAnimationDuration : 0
-								  delay:0
-								options:self.menuRevealAnimationOption
-							 animations:^{
-								 CGFloat width = self.horizontalSize;
-								 CGFloat moveLocation = (self.horizontalLocation> 0) ? width : -1*width;
-								 [self moveHorizontallyToLocation:moveLocation];
-							 } completion:^(BOOL finished) {
-								 switchAndCallCompletion(YES);
-							 }];
-		}
-		else
-		{
-			switchAndCallCompletion(YES);
-		}
-	}
-	else
-	{
-		switchAndCallCompletion(NO);
-	}
+            if (completion)
+                completion();
+        }];
+    }
+    else
+    {
+        setNewControllerBlock();
+        
+        if (completion)
+            completion();
+    }
 }
 
 - (void)switchToViewController:(UIViewController *)viewController withCompletion:(void (^)())completion
 {
-	[self switchToViewController:viewController withSlideOutAnimation:YES popType:PopTypeRoot andCompletion:completion];
+	[self switchToViewController:viewController popType:PopTypeRoot andCompletion:completion];
 }
 
 - (void)popToRootAndSwitchToViewController:(UIViewController *)viewController
 				  withSlideOutAnimation:(BOOL)slideOutAnimation
 						  andCompletion:(void (^)())completion
 {
-	[self switchToViewController:viewController withSlideOutAnimation:slideOutAnimation popType:PopTypeRoot andCompletion:completion];
+	[self switchToViewController:viewController popType:PopTypeRoot andCompletion:completion];
 }
 
 - (void)popToRootAndSwitchToViewController:(UIViewController *)viewController
 						 withCompletion:(void (^)())completion
 {
-	[self switchToViewController:viewController withSlideOutAnimation:YES popType:PopTypeRoot andCompletion:completion];
+	[self switchToViewController:viewController popType:PopTypeRoot andCompletion:completion];
 }
 
 - (void)popAllAndSwitchToViewController:(UIViewController *)viewController
 		 withSlideOutAnimation:(BOOL)slideOutAnimation
 				 andCompletion:(void (^)())completion
 {
-	[self switchToViewController:viewController withSlideOutAnimation:slideOutAnimation popType:PopTypeAll andCompletion:completion];
+	[self switchToViewController:viewController popType:PopTypeAll andCompletion:completion];
 }
 
 - (void)popAllAndSwitchToViewController:(UIViewController *)viewController
 						 withCompletion:(void (^)())completion
 {
-	[self switchToViewController:viewController withSlideOutAnimation:YES popType:PopTypeAll andCompletion:completion];
-}
-
-- (void)closeMenuWithCompletion:(void (^)())completion
-{
-	[self closeMenuWithDuration:self.menuRevealAnimationDuration andCompletion:completion];
-}
-
-- (void)openMenu:(Menu)menu withCompletion:(void (^)())completion
-{
-	[self openMenu:menu withDuration:self.menuRevealAnimationDuration andCompletion:completion];
+	[self switchToViewController:viewController popType:PopTypeAll andCompletion:completion];
 }
 
 - (void)toggleLeftMenu
@@ -479,8 +441,10 @@ static SlideNavigationController *singletonInstance;
 	return NO;
 }
 
-- (void)openMenu:(Menu)menu withDuration:(float)duration andCompletion:(void (^)())completion
+- (void)openMenu:(Menu)menu withCompletion:(void (^)())completion
 {
+    NSTimeInterval duration = self.menuOpenAnimationDuration;
+    
 	[self enableTapGestureToCloseMenu:YES];
 
 	[self prepareMenuForReveal:menu];
@@ -502,8 +466,10 @@ static SlideNavigationController *singletonInstance;
 					 }];
 }
 
-- (void)closeMenuWithDuration:(float)duration andCompletion:(void (^)())completion
+- (void)closeMenuWithCompletion:(void (^)())completion
 {
+    NSTimeInterval duration = self.menuCloseAnimationDuration;
+    
 	[self enableTapGestureToCloseMenu:NO];
     
      Menu menu = (self.horizontalLocation > 0) ? MenuLeft : MenuRight;
@@ -740,8 +706,8 @@ static SlideNavigationController *singletonInstance;
     else
         currentMenu = (translation.x > 0) ? MenuLeft : MenuRight;
     
-    if (![self shouldDisplayMenu:currentMenu forViewController:self.topViewController])
-        return;
+//    if (![self shouldDisplayMenu:currentMenu forViewController:self.topViewController])
+//        return;
     
     [self prepareMenuForReveal:currentMenu];
     
@@ -778,11 +744,11 @@ static SlideNavigationController *singletonInstance;
 				if (currentX > 0)
 				{
 					if ([self shouldDisplayMenu:menu forViewController:self.visibleViewController])
-						[self openMenu:(velocity.x > 0) ? MenuLeft : MenuRight withDuration:MENU_QUICK_SLIDE_ANIMATION_DURATION andCompletion:nil];
+						[self openMenu:(velocity.x > 0) ? MenuLeft : MenuRight withCompletion:nil];
 				}
 				else
 				{
-					[self closeMenuWithDuration:MENU_QUICK_SLIDE_ANIMATION_DURATION andCompletion:nil];
+					[self closeMenuWithCompletion:nil];
 				}
 			}
 			// Moving Left
@@ -790,12 +756,12 @@ static SlideNavigationController *singletonInstance;
 			{
 				if (currentX > 0)
 				{
-					[self closeMenuWithDuration:MENU_QUICK_SLIDE_ANIMATION_DURATION andCompletion:nil];
+                    [self closeMenuWithCompletion:nil];
 				}
 				else
 				{
 					if ([self shouldDisplayMenu:menu forViewController:self.visibleViewController])
-						[self openMenu:(velocity.x > 0) ? MenuLeft : MenuRight withDuration:MENU_QUICK_SLIDE_ANIMATION_DURATION andCompletion:nil];
+						[self openMenu:(velocity.x > 0) ? MenuLeft : MenuRight withCompletion:nil];
 				}
 			}
 		}
