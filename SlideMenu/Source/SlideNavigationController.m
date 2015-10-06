@@ -218,7 +218,7 @@ static SlideNavigationController *singletonInstance;
 		return;
 	}
     
-    void (^setNewControllerBlock)() = ^{
+    void (^switchAndCallCompletion)(BOOL) = ^(BOOL closeMenuBeforeCallingCompletion) {
         if (poptype == PopTypeAll) {
             [self setViewControllers:@[viewController]];
         }
@@ -226,24 +226,47 @@ static SlideNavigationController *singletonInstance;
             [super popToRootViewControllerAnimated:NO];
             [super pushViewController:viewController animated:NO];
         }
-    };
-    
-    if ([self isMenuOpen])
-    {
-        [self closeMenuWithCompletion:^{
-            setNewControllerBlock();
-            
+        
+        if (closeMenuBeforeCallingCompletion)
+        {
+            [self closeMenuWithCompletion:^{
+                if (completion)
+                    completion();
+            }];
+        }
+        else
+        {
             if (completion)
                 completion();
-        }];
-    }
-    else
-    {
-        setNewControllerBlock();
-        
-        if (completion)
-            completion();
-    }
+        }
+    };
+    
+//    if ([self isMenuOpen])
+//    {
+//        if (slideOutAnimation)
+//        {
+//            [UIView animateWithDuration:(slideOutAnimation) ? self.menuRevealAnimationDuration : 0
+//                                  delay:0
+//                                options:self.menuRevealAnimationOption
+//                             animations:^{
+//                                 CGFloat width = self.horizontalSize;
+//                                 CGFloat moveLocation = (self.horizontalLocation> 0) ? width : -1*width;
+//                                 [self moveHorizontallyToLocation:moveLocation];
+//                             } completion:^(BOOL finished) {
+//                                 switchAndCallCompletion(YES);
+//                             }];
+//        }
+//        else
+//        {
+//            switchAndCallCompletion(YES);
+//        }
+//    }
+//    else
+//    {
+//        switchAndCallCompletion(NO);
+//    }
+    
+    switchAndCallCompletion([self isMenuOpen]);
 }
 
 - (void)switchToViewController:(UIViewController *)viewController withCompletion:(void (^)())completion
