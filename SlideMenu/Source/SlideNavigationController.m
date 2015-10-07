@@ -50,7 +50,7 @@ NSString  *const SlideNavigationControllerDidReveal = @"SlideNavigationControlle
 #define MENU_SLIDE_ANIMATION_DURATION .3
 #define MENU_SLIDE_OPEN_ANIMATION_DURATION .4
 #define MENU_SLIDE_CLOSE_ANIMATION_DURATION .2
-#define MENU_SLIDE_ANIMATION_OPTION UIViewAnimationOptionCurveEaseOut
+#define MENU_SLIDE_ANIMATION_OPTION UIViewAnimationOptionCurveLinear
 #define MENU_QUICK_SLIDE_ANIMATION_DURATION .18
 #define MENU_IMAGE @"menu-button"
 #define MENU_SHADOW_RADIUS 10
