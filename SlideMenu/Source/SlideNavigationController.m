@@ -48,6 +48,8 @@ NSString * const SlideNavigationControllerDidClose = @"SlideNavigationController
 NSString  *const SlideNavigationControllerDidReveal = @"SlideNavigationControllerDidReveal";
 
 #define MENU_SLIDE_ANIMATION_DURATION .3
+#define MENU_SLIDE_OPEN_ANIMATION_DURATION .4
+#define MENU_SLIDE_CLOSE_ANIMATION_DURATION .2
 #define MENU_SLIDE_ANIMATION_OPTION UIViewAnimationOptionCurveEaseOut
 #define MENU_QUICK_SLIDE_ANIMATION_DURATION .18
 #define MENU_IMAGE @"menu-button"
@@ -119,8 +121,8 @@ static SlideNavigationController *singletonInstance;
 	
 	singletonInstance = self;
 	
-	self.menuOpenAnimationDuration = MENU_SLIDE_ANIMATION_DURATION;
-    self.menuCloseAnimationDuration = MENU_SLIDE_ANIMATION_DURATION;
+	self.menuOpenAnimationDuration = MENU_SLIDE_OPEN_ANIMATION_DURATION;
+        self.menuCloseAnimationDuration = MENU_SLIDE_CLOSE_ANIMATION_DURATION;
 	self.menuRevealAnimationOption = MENU_SLIDE_ANIMATION_OPTION;
 	self.landscapeSlideOffset = MENU_DEFAULT_SLIDE_OFFSET;
 	self.portraitSlideOffset = MENU_DEFAULT_SLIDE_OFFSET;
