@@ -48,6 +48,8 @@ extern NSString * const SlideNavigationControllerDidOpen;
 extern NSString  *const SlideNavigationControllerDidClose;
 extern NSString  *const SlideNavigationControllerDidReveal;
 
+extern NSString *const SlideMenuOpenAfterSwipeKey;
+
 @property (nonatomic, assign) BOOL avoidSwitchingToSameClassViewController;
 @property (nonatomic, assign) BOOL enableSwipeGesture;
 @property (nonatomic, assign) BOOL enableShadow;

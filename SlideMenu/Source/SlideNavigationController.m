@@ -47,6 +47,8 @@ NSString * const SlideNavigationControllerDidOpen = @"SlideNavigationControllerD
 NSString * const SlideNavigationControllerDidClose = @"SlideNavigationControllerDidClose";
 NSString  *const SlideNavigationControllerDidReveal = @"SlideNavigationControllerDidReveal";
 
+NSString *const SlideMenuOpenAfterSwipeKey = @"SlideMenuOpenAfterSwipeKey";
+
 #define MENU_SLIDE_ANIMATION_DURATION .3
 #define MENU_SLIDE_OPEN_ANIMATION_DURATION .4
 #define MENU_SLIDE_CLOSE_ANIMATION_DURATION .2
@@ -468,6 +470,11 @@ static SlideNavigationController *singletonInstance;
 
 - (void)openMenu:(Menu)menu withCompletion:(void (^)())completion
 {
+    [self openMenu:menu afterSwipe:NO withCompletion:completion];
+}
+
+- (void)openMenu:(Menu)menu afterSwipe:(BOOL)afterSwipe withCompletion:(void (^)())completion
+{
     NSTimeInterval duration = self.menuOpenAnimationDuration;
     
 	[self enableTapGestureToCloseMenu:YES];
@@ -487,7 +494,9 @@ static SlideNavigationController *singletonInstance;
 						 if (completion)
 							 completion();
                          
-                         [self postNotificationWithName:SlideNavigationControllerDidOpen forMenu:menu];
+                         [self postNotificationWithName:SlideNavigationControllerDidOpen forMenu:menu withExtParams:@{
+                                                                                                                      SlideMenuOpenAfterSwipeKey : @(afterSwipe)
+                                                                                                                      }];
 					 }];
 }
 
@@ -653,9 +662,17 @@ static SlideNavigationController *singletonInstance;
 
 - (void)postNotificationWithName:(NSString *)name forMenu:(Menu)menu
 {
+    [self postNotificationWithName:name forMenu:menu withExtParams:nil];
+}
+
+- (void)postNotificationWithName:(NSString *)name forMenu:(Menu)menu withExtParams:(NSDictionary *)extParams
+{
+    NSMutableDictionary *userInfo = extParams ? [extParams mutableCopy] : [NSMutableDictionary dictionary];
+    
     NSString *menuString = (menu == MenuLeft) ? NOTIFICATION_USER_INFO_MENU_LEFT : NOTIFICATION_USER_INFO_MENU_RIGHT;
-    NSDictionary *userInfo = @{ NOTIFICATION_USER_INFO_MENU : menuString };
-    [[NSNotificationCenter defaultCenter] postNotificationName:name object:nil userInfo:userInfo];
+    userInfo[NOTIFICATION_USER_INFO_MENU] = menuString;
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:name object:nil userInfo:[userInfo copy]];
 }
 
 #pragma mark - UINavigationControllerDelegate Methods -
@@ -769,7 +786,7 @@ static SlideNavigationController *singletonInstance;
 				if (currentX > 0)
 				{
 					if ([self shouldDisplayMenu:menu forViewController:self.visibleViewController])
-						[self openMenu:(velocity.x > 0) ? MenuLeft : MenuRight withCompletion:nil];
+						[self openMenu:(velocity.x > 0) ? MenuLeft : MenuRight afterSwipe:YES withCompletion:nil];
 				}
 				else
 				{
@@ -786,7 +803,7 @@ static SlideNavigationController *singletonInstance;
 				else
 				{
 					if ([self shouldDisplayMenu:menu forViewController:self.visibleViewController])
-						[self openMenu:(velocity.x > 0) ? MenuLeft : MenuRight withCompletion:nil];
+						[self openMenu:(velocity.x > 0) ? MenuLeft : MenuRight afterSwipe:YES withCompletion:nil];
 				}
 			}
 		}
@@ -795,7 +812,7 @@ static SlideNavigationController *singletonInstance;
 			if (currentXOffset < (self.horizontalSize - self.slideOffset)/2)
 				[self closeMenuWithCompletion:nil];
 			else
-				[self openMenu:(currentX > 0) ? MenuLeft : MenuRight withCompletion:nil];
+				[self openMenu:(currentX > 0) ? MenuLeft : MenuRight afterSwipe:YES withCompletion:nil];
 		}
     }
 }
