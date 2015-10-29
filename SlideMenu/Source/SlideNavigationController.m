@@ -468,6 +468,14 @@ static SlideNavigationController *singletonInstance;
 	return NO;
 }
 
+- (CGFloat)openingPart
+{
+    CGFloat slideOffset = self.slideOffset;
+    CGFloat absHorizontalLocation = (CGFloat)fabs(self.horizontalLocation);
+    
+    return MIN(1.f, absHorizontalLocation/slideOffset);
+}
+
 - (void)openMenu:(Menu)menu withCompletion:(void (^)())completion
 {
     [self openMenu:menu afterSwipe:NO withCompletion:completion];
@@ -475,7 +483,7 @@ static SlideNavigationController *singletonInstance;
 
 - (void)openMenu:(Menu)menu afterSwipe:(BOOL)afterSwipe withCompletion:(void (^)())completion
 {
-    NSTimeInterval duration = self.menuOpenAnimationDuration;
+    NSTimeInterval duration = self.menuOpenAnimationDuration * (1.f - [self openingPart]);
     
 	[self enableTapGestureToCloseMenu:YES];
 
@@ -502,7 +510,7 @@ static SlideNavigationController *singletonInstance;
 
 - (void)closeMenuWithCompletion:(void (^)())completion
 {
-    NSTimeInterval duration = self.menuCloseAnimationDuration;
+    NSTimeInterval duration = self.menuCloseAnimationDuration * [self openingPart];
     
 	[self enableTapGestureToCloseMenu:NO];
     
