@@ -683,19 +683,6 @@ static SlideNavigationController *singletonInstance;
     [[NSNotificationCenter defaultCenter] postNotificationName:name object:nil userInfo:[userInfo copy]];
 }
 
-#pragma mark - UINavigationControllerDelegate Methods -
-
-- (void)navigationController:(UINavigationController *)navigationController
-	  willShowViewController:(UIViewController *)viewController
-					animated:(BOOL)animated
-{
-	if ([self shouldDisplayMenu:MenuLeft forViewController:viewController])
-		viewController.navigationItem.leftBarButtonItem = [self barButtonItemForMenu:MenuLeft];
-	
-	if ([self shouldDisplayMenu:MenuRight forViewController:viewController])
-		viewController.navigationItem.rightBarButtonItem = [self barButtonItemForMenu:MenuRight];
-}
-
 - (CGFloat)slideOffset
 {
 	return (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
